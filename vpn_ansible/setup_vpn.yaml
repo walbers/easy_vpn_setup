@@ -1,0 +1,53 @@
+---
+
+- name: "Setup VPNs"
+  hosts: vpns
+  remote_user: root
+  become: true
+  tasks:
+  
+    # change settings on vpn so not root
+
+    - name: "Update and upgrade server"
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: "Get latest setup script"
+      get_url:
+        url: https://github.com/walbers/openvpn-install/raw/master/openvpn-install.sh
+        dest: /root/openvpn-install.sh
+        mode: '0700'
+        force: yes
+
+    - name: Execute openvpn script to start vpn
+      ansible.builtin.shell: /root/openvpn-install.sh
+
+    - name: Set there to be no logs
+      ansible.builtin.lineinfile:
+        path: /etc/openvpn/server/server.conf
+        regexp: '^verb 3'
+        line: verb 0
+      register: set_logs
+    
+    - name: restart vpn service
+      when: set_logs.changed
+      ansible.builtin.systemd:
+        name: openvpn-server@server.service
+        state: restarted
+        enabled: yes
+
+    - name: Execute openvpn again to create 10 client certs
+      ansible.builtin.shell: /root/openvpn-install.sh certs
+
+    - name: zip certs
+      archive:
+        path: ~/ovpn_files
+        format: zip
+        dest: ~/ovpn.zip
+   
+    - name: get certs
+      ansible.builtin.fetch:
+        src: ~/ovpn.zip
+        dest: /mnt/c

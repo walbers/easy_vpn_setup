@@ -1,0 +1,10 @@
+---
+
+- name: "Remove VPNs"
+  hosts: vpns
+  remote_user: root
+  become: true
+  tasks:
+
+    - name: Remove VPN from host
+      ansible.builtin.shell: /root/openvpn-install.sh remove
