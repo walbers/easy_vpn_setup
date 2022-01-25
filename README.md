@@ -1,6 +1,6 @@
 Sets up a VPN on a Linode VPS with one script.
 
-Prerequistes: terraform and ansible installed.
+Prerequistes: Linode account, terraform and ansible installed locally.
   
 1. Put your Linode token and ssh key in vpn_terraform/linode-terraform-web.tf. Change region if you want.
 2. Run ./create_vpn
